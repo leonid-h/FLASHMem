@@ -60,7 +60,7 @@ class WritingPatternDetector:
         self.__error_log_callback = error_log_callback
         loggers.setup_detector_logger(log_path)
 
-    def process_incoming_frame(self, transmission_time, frame) -> None:
+    def process_incoming_frame(self, transmission_time, frame) -> None: #TODO: what to do with frame?
         if transmission_time <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")

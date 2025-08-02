@@ -1,11 +1,21 @@
 import logging
+import colorlog
 
 
 def setup_infra_logger() -> None:
     infra_logger = logging.getLogger("infra_logger")
     infra_logger.handlers.clear()
-    infra_logger_handler = logging.StreamHandler()
-    infra_logger_formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
+    infra_logger_handler = colorlog.StreamHandler()
+    infra_logger_formatter = colorlog.ColoredFormatter(
+        '%(log_color)s %(asctime)s %(name)s %(levelname)s: %(message)s',
+        log_colors={
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'bold_red',
+        }
+    )
     infra_logger_handler.setFormatter(infra_logger_formatter)
     infra_logger.addHandler(infra_logger_handler)
     infra_logger.setLevel(logging.INFO)

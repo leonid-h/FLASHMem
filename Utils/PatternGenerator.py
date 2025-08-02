@@ -112,4 +112,5 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
 
         logger.info(f"Successfully generated a writing pattern, bin file: {self.__frames_path}")
 
-        return self.__current_pattern["threshold"], self.__current_pattern["delta"], pattern_descriptor, self.__frames_path
+        return (self.__current_pattern["threshold"], self.__current_pattern["delta"],
+                pattern_descriptor, self.__frames_path)
