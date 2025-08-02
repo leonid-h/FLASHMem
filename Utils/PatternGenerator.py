@@ -34,12 +34,17 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
         self.__config_file_path = config_file_path
         self.__frames_path = frames_path + "/" + FRAMES_BIN_FILENAME
         self.__patterns_iter = None
+        self.__current_pattern = None
 
     def __iter__(self) -> 'PatternGenerator':  # returns self
         return self
 
     def __next__(self) -> tuple[int, int, list, str]:
         return self.__generate()
+
+    @property
+    def current_pattern(self) -> dict:
+        return self.__current_pattern
 
     def init(self) -> None:
         try:
@@ -88,12 +93,12 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
             yield frame
 
     def __generate(self) -> tuple[int, int, list, str]:
-        current_pattern = next(self.__patterns_iter)
+        self.__current_pattern = next(self.__patterns_iter)
         pattern_descriptor = []
 
         try:
             with open(self.__frames_path, "wb") as f:
-                for mw_index, memory_write in enumerate(current_pattern["memory_writes"]):
+                for mw_index, memory_write in enumerate(self.__current_pattern["memory_writes"]):
                     pattern_descriptor.append(0)
                     for frame_index, frame in enumerate(self._get_frames(memory_write)):
                         f.write(frame)
@@ -107,4 +112,4 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
 
         logger.info(f"Successfully generated a writing pattern, bin file: {self.__frames_path}")
 
-        return current_pattern["threshold"], current_pattern["delta"], pattern_descriptor, self.__frames_path
+        return self.__current_pattern["threshold"], self.__current_pattern["delta"], pattern_descriptor, self.__frames_path
