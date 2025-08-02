@@ -9,7 +9,7 @@ from typing import TypeVar, Generator, Iterable, Iterator
 
 from Utils.constants import FRAME_PAYLOAD_SIZE, FRAME_TOTAL_SIZE, DATA_PATTERN, FRAMES_BIN_FILENAME
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("infra_logger." + __name__)
 T = TypeVar('T')
 
 

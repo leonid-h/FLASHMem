@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger("infra_logger." + __name__)
 
 
 class FrameTransmitter:

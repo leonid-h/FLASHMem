@@ -1,15 +1,13 @@
 import sys
 import logging
+from Utils import loggers
 
 from Utils.PatternGenerator import safe_iterate_patterns, BadConfigError, PatternGenerator
-from Utils.loggers import setup_infra_logging
 from MemorySystem.MemorySystem import MemorySystem
 from MemorySystem.FrameTransmitter import FrameTransmitter
 from MemorySystem.WritingPatternDetector import WritingPatternDetector
 
-setup_infra_logging()
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("infra_logger." + __name__)
 
 if __name__ == "__main__":
 
