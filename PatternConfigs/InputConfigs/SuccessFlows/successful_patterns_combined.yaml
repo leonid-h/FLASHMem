@@ -1,0 +1,66 @@
+# FAST SEQUENTIAL WRITE BELOW THRESHOLD
+# MEMORY WRITES: 4 (<THRESHOLD)
+# TOTAL DURATION: 35 SECONDS (<DELTA)
+# TOTAL FRAME COUNT IN FLASH: 25
+# MEM0RY WRITE AVERAGE SPEED: 1.08 FPS
+# AVERAGE SPEED WITH HTATs: 0.71 FPS
+# STATUS: SUCCESS
+
+writing_patterns:
+  - name: FAST_WRITE_BELOW_TH
+    threshold: 10     # number of writes
+    delta: 50         # seconds
+    memory_writes:
+      #memory write 1
+      - Start_time: 0 # start time sec
+        Duration: 5 # duration sec
+        Start_address: 0x00000001 # start address
+        N: 5 # N continues frames
+      #memory write 2
+      - Start_time: 10 # start time sec
+        Duration: 7 # duration sec
+        Start_address: 0x00000006 # start address
+        N: 8 # N continues frames
+      #memory write 3
+      - Start_time: 20 # start time sec
+        Duration: 5 # duration sec
+        Start_address: 0x0000000E # start address
+        N: 4 # N continues frames
+      #memory write 4
+      - Start_time: 29 # start time sec
+        Duration: 6 # duration sec
+        Start_address: 0x00000012 # start address
+        N: 8 # N continues frames
+
+# SLOW SEQUENTIAL WRITE BELOW THRESHOLD
+# MEMORY WRITES: 4 (<THRESHOLD)
+# TOTAL DURATION: 75 SECONDS (>DELTA)
+# TOTAL FRAME COUNT IN FLASH: 25
+# MEM0RY WRITE AVERAGE SPEED: 0.4 FPS
+# AVERAGE SPEED WITH HTATs: 0.3 FPS
+# STATUS: SUCCESS
+
+  - name: SLOW_WRITE_BELOW_TH
+    threshold: 10     # number of writes
+    delta: 50         # seconds
+    memory_writes:
+      #memory write 1
+      - Start_time: 0 # start time sec
+        Duration: 15 # duration sec
+        Start_address: 0x00000001 # start address
+        N: 5 # N continues frames
+      #memory write 2
+      - Start_time: 20 # start time sec
+        Duration: 17 # duration sec
+        Start_address: 0x00000006 # start address
+        N: 8 # N continues frames
+      #memory write 3
+      - Start_time: 40 # start time sec
+        Duration: 15 # duration sec
+        Start_address: 0x0000000E # start address
+        N: 4 # N continues frames
+      #memory write 4
+      - Start_time: 59 # start time sec
+        Duration: 16 # duration sec
+        Start_address: 0x00000012 # start address
+        N: 8 # N continues frames
