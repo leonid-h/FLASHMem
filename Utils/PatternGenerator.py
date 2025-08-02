@@ -13,8 +13,8 @@ logger = logging.getLogger("infra_logger." + __name__)
 T = TypeVar('T')
 
 
-def safe_iterate_patterns(ptrn_generator: Iterable[T]) -> Generator[T, None, None]:
-    it = iter(ptrn_generator)
+def safe_iterate_patterns(pattern_generator_iter: Iterable[T]) -> Generator[T, None, None]:
+    it = iter(pattern_generator_iter)
     while True:
         try:
             yield next(it)
@@ -29,16 +29,16 @@ class BadConfigError(Exception):
     pass
 
 
-class PatternGenerator:
+class PatternGenerator(Iterator[tuple[int, int, list, str]]):
     def __init__(self, config_file_path: str, frames_path: str) -> None:
         self.__config_file_path = config_file_path
         self.__frames_path = frames_path + "/" + FRAMES_BIN_FILENAME
         self.__patterns_iter = None
 
-    def __iter__(self) -> Iterator[tuple[int, int, str]]:
+    def __iter__(self) -> 'PatternGenerator':  # returns self
         return self
 
-    def __next__(self) -> tuple[int, int, str]:
+    def __next__(self) -> tuple[int, int, list, str]:
         return self.__generate()
 
     def init(self) -> None:
@@ -87,14 +87,17 @@ class PatternGenerator:
 
             yield frame
 
-    def __generate(self) -> tuple[int, int, str]:
+    def __generate(self) -> tuple[int, int, list, str]:
         current_pattern = next(self.__patterns_iter)
+        pattern_descriptor = []
 
         try:
             with open(self.__frames_path, "wb") as f:
-                for memory_write in current_pattern["memory_writes"]:
-                    for frame in self._get_frames(memory_write):
+                for mw_index, memory_write in enumerate(current_pattern["memory_writes"]):
+                    pattern_descriptor.append(0)
+                    for frame_index, frame in enumerate(self._get_frames(memory_write)):
                         f.write(frame)
+                        pattern_descriptor[mw_index] += 1
         except OSError as err:
             logging.error(f"Failed to write to {self.__frames_path}: {err}")
             raise
@@ -104,4 +107,4 @@ class PatternGenerator:
 
         logger.info(f"Successfully generated a writing pattern, bin file: {self.__frames_path}")
 
-        return current_pattern["threshold"], current_pattern["delta"], self.__frames_path
+        return current_pattern["threshold"], current_pattern["delta"], pattern_descriptor, self.__frames_path

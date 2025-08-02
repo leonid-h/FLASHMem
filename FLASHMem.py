@@ -7,6 +7,7 @@ from MemorySystem.MemorySystem import MemorySystem
 from MemorySystem.FrameTransmitter import FrameTransmitter
 from MemorySystem.WritingPatternDetector import WritingPatternDetector
 
+loggers.setup_infra_logger()
 logger = logging.getLogger("infra_logger." + __name__)
 
 if __name__ == "__main__":
@@ -22,16 +23,20 @@ if __name__ == "__main__":
         logger.error(f"Configuration Error: {err}")
         sys.exit(1)
 
-    for threshold, delta, frames_bin_path in safe_iterate_patterns(pattern_generator):
+    for threshold, delta, patter_descriptor, frames_bin_path in safe_iterate_patterns(pattern_generator):
 
         # Calls FrameTransmitter: takes FRAMES.bin file path, parses it and stores the frames
         frame_transmitter = FrameTransmitter(frames_bin_path)
         writing_pattern_detector = WritingPatternDetector(threshold, delta)
-        memory_system = MemorySystem(frame_transmitter, writing_pattern_detector)
+
+        memory_system = MemorySystem(frame_transmitter, writing_pattern_detector, patter_descriptor)
 
         # transmitter transmits the frames to wp_detector on by one
         # wp_detector detects failures or writes frames to the NAND
-        # memory_system.run()
-
+        try:
+            memory_system.run()
+        except (FileNotFoundError, PermissionError, OSError) as err:
+            logger.error(f"Error opening/reading frames file: {err}")
+            sys.exit(1)
         # memory reports statistics
         # memory_system.report()

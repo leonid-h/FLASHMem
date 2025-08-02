@@ -1,17 +1,31 @@
 import logging
+import struct
+from typing import Generator, Tuple
+
+from Utils.constants import FRAME_HEADER_SIZE, FRAME_PAYLOAD_SIZE
 
 logger = logging.getLogger("infra_logger." + __name__)
 
 
 class FrameTransmitter:
-    def __init__(self, frames_path: str):
-        self.frames_path = frames_path
+    def __init__(self, frames_path: str) -> None:
+        self.__frames_path = frames_path
 
-    def transmit(self):
-        pass
+    def start_frame_transmission(self) -> Generator[Tuple[int, bytes], None, None]:
+        with open(self.__frames_path, "rb") as f:
+            while True:
+                header_bytes = f.read(FRAME_HEADER_SIZE)
+                payload_bytes = f.read(FRAME_PAYLOAD_SIZE)
+                if len(header_bytes) < FRAME_HEADER_SIZE or len(payload_bytes) < FRAME_PAYLOAD_SIZE:
+                    logger.info(f"Finished transmitting frames from: {self.__frames_path}")
+                    break
 
-    def has_frames(self):
-        pass
+                try:
+                    address, transmission_time = struct.unpack('<II', header_bytes)
+                except struct.error as e:
+                    logger.error(f"Failed to unpack header at position {f.tell() - FRAME_HEADER_SIZE}: {e}")
+                    break
 
-    def transmit_frame(self):
-        pass
+                header_bytes = struct.pack('<I', address)
+
+                yield transmission_time, header_bytes + payload_bytes
