@@ -102,6 +102,6 @@ class PatternGenerator:
             logging.error(f"Invalid frame header field value: {err}")
             raise
 
-        logger.info(f"Successfully generated bin file: {self.__frames_path}")
+        logger.info(f"Successfully generated a writing pattern, bin file: {self.__frames_path}")
 
         return current_pattern["threshold"], current_pattern["delta"], self.__frames_path
