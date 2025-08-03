@@ -11,6 +11,18 @@ T = TypeVar('T')
 
 
 def safe_iterate_patterns(pattern_generator_iter: Iterable[T]) -> Generator[T, None, None]:
+    """
+    Safely iterates over a pattern generator, yielding valid patterns and skipping erroneous patterns.
+
+    Args:
+        pattern_generator_iter (Iterable[T]): An iterable that yields patterns.
+
+    Yields:
+        T: The next pattern from the generator.
+
+    Logs:
+        Errors encountered during iteration (OSError, ValueError).
+    """
     it = iter(pattern_generator_iter)
     while True:
         try:
@@ -23,26 +35,74 @@ def safe_iterate_patterns(pattern_generator_iter: Iterable[T]) -> Generator[T, N
 
 
 class BadConfigError(Exception):
+    """
+    Custom exception raised in case there is a problem loading the configuration file.
+    """
     pass
 
 
 class PatternGenerator(Iterator[tuple[int, int, list, str]]):
+    """
+    Iterator that generates writing pattern and writes a bin frame file for each pattern.
+
+    Attributes:
+        __config_file_path (str): Path to the YAML configuration file.
+        __patterns_iter (Iterator): Internal iterator that iterates patterns.
+        __current_pattern (dict): The current pattern being processed.
+    """
     def __init__(self, config_file_path: str) -> None:
+        """
+        Initializes the PatternGenerator with the specified config file.
+
+        Args:
+            config_file_path (str): Path to the YAML configuration file.
+        """
         self.__config_file_path = config_file_path
         self.__patterns_iter = None
         self.__current_pattern = None
 
     def __iter__(self) -> 'PatternGenerator':  # returns self
+        """
+        Returns the iterator instance (self).
+
+        Returns:
+            PatternGenerator: The iterator instance.
+        """
         return self
 
     def __next__(self) -> tuple[int, int, list, str]:
+        """
+        Calls self.__generate()
+
+        Returns:
+            tuple: (threshold, delta, pattern_descriptor, frames_bin_filename)
+                - threshold (int): Pattern threshold parameter.
+                - delta (int): Pattern delta parameter.
+                - pattern_descriptor (list): Frame count per memory write.
+                - frames_bin_filename (str): Output file path for generated frames.
+
+        Raises:
+              Errors raised by self._generate().
+        """
         return self.__generate()
 
     @property
     def current_pattern(self) -> dict:
+        """
+        The current pattern being processed by the memory system.
+
+        Returns:
+            dict: The current pattern's configuration dictionary.
+        """
         return self.__current_pattern
 
     def init(self) -> None:
+        """
+        Initializes the generator by loading and parsing the YAML config file.
+
+        Raises:
+            BadConfigError: If the config file is missing, empty, or invalid.
+        """
         try:
             with open(self.__config_file_path, "r") as f:
                 patterns = yaml.safe_load(f)
@@ -57,7 +117,19 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
 
     @staticmethod
     def _get_frames(memory_write: dict) -> Generator[bytes, None, None]:
+        """
+        Generates all frames for a single memory write.
 
+        Args:
+            memory_write (dict): Dictionary that has the following keys:
+             start time, duration, start address, and frame count.
+
+        Yields:
+            bytes: Serialized frame data (header(contains address and transmission time) + payload).
+
+        Raises:
+            ValueError: If frame header fields are out of range (4 byte unsigned integer).
+        """
         tx_times = set()
 
         def ensure_unique_tx_time(tx_time: int) -> int:
@@ -89,6 +161,20 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
             yield frame
 
     def __generate(self) -> tuple[int, int, list, str]:
+        """
+        Generates the next writing pattern and writes corresponding frames to the FRAMES.bin file.
+
+        Returns:
+            tuple: (threshold, delta, pattern_descriptor, frames_bin_filename)
+                - threshold (int): Pattern threshold parameter.
+                - delta (int): Pattern delta parameter.
+                - pattern_descriptor (list): Frame count per memory write.
+                - frames_bin_filename (str): Output file path for generated frames.
+
+        Raises:
+            OSError: If writing to the frames file fails.
+            ValueError: If frame header fields are invalid.
+        """
         self.__current_pattern = next(self.__patterns_iter)
         pattern_descriptor = []
 
