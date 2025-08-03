@@ -19,7 +19,7 @@ logger = logging.getLogger("infra_logger." + __name__)
 def remove_failure_log_file_if_empty(file_path: str) -> None:
     """
     The failure log file is created in advance before each pattern run.
-    This function removes such a file if no failure occurred so the log is empty.
+    This function removes such a file if no failure occurred and the log is empty.
 
     Args:
         file_path (str): The path to the file to check and remove.
@@ -32,12 +32,11 @@ def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
     """
     Runs the simulation loop for all writing patterns yielded by the PatternGenerator one by one.
 
-    For each pattern, sets up the SystemClock, FrameTransmitter, and WritingPatternDetector;
+    For each pattern, sets up the SystemClock, FrameTransmitter, and WritingPatternDetector.
     initializes the detector_logger, runs the memory system, and calls remove_failure_log_file_if_empty.
 
     Args:
-        writing_pattern_generator (PatternGenerator): An iterator yielding
-            writing patterns to simulate.
+        writing_pattern_generator (PatternGenerator): An iterator yielding writing patterns to simulate.
     Raises:
         FileNotFoundError: If required files are missing.
         PermissionError: If there are file permission errors.
