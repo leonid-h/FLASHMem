@@ -18,8 +18,8 @@ class MemorySystem:
         for memory_write_len in self.__pattern_descriptor:
             try:
                 for frame in range(memory_write_len):
-                    transmission_time, frame = next(transmission_chanel)
-                    self.__detector.process_incoming_frame(transmission_time, frame)
+                    frame = next(transmission_chanel)
+                    self.__detector.process_incoming_frame(frame)
                 self.__detector.notify_mw_tx_end()
             except StopIteration:
                 logger.warning("Unexpected end of memory write transmission")

@@ -8,10 +8,11 @@ logger = logging.getLogger("infra_logger." + __name__)
 
 
 class FrameTransmitter:
-    def __init__(self, frames_path: str) -> None:
+    def __init__(self, system_clock, frames_path: str) -> None:
         self.__frames_path = frames_path
+        self.__system_clock = system_clock
 
-    def start_frame_transmission(self) -> Generator[Tuple[int, bytes], None, None]:
+    def start_frame_transmission(self) -> Generator[bytes, None, None]:
         with open(self.__frames_path, "rb") as f:
             while True:
                 header_bytes = f.read(FRAME_HEADER_SIZE)
@@ -28,4 +29,6 @@ class FrameTransmitter:
 
                 header_bytes = struct.pack('<I', address)
 
-                yield transmission_time, header_bytes + payload_bytes
+                self.__system_clock.wait_until(transmission_time)
+
+                yield header_bytes + payload_bytes
