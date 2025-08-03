@@ -8,8 +8,7 @@ class SystemClock:
     def now(self) -> int:
         return self.__time
 
-    def wait_until(self, target_time):
+    def wait_until(self, target_time) -> None:
         assert target_time >= self.__time
 
         self.__time = target_time
-    

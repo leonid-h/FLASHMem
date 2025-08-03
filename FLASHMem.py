@@ -11,24 +11,12 @@ from MemorySystem.WritingPatternDetector import WritingPatternDetector, create_f
 loggers.setup_infra_logger()
 logger = logging.getLogger("infra_logger." + __name__)
 
-if __name__ == "__main__":
 
-    config_file_path = "PatternConfigs/InputConfigs/SystemFailureFlows/failure_pattern_after_successful.yaml"  # TODO: make this dynamic
-    frames_folder_path = "PatternConfigs/Frames"  # TODO: make this dynamic
-    failure_log_path = "Logs/log.txt" # TODO: make separate logs for each system failure
-
-    pattern_generator = PatternGenerator(config_file_path, frames_folder_path)
-
-    try:
-        pattern_generator.init()
-    except BadConfigError as err:
-        logger.critical(f"Configuration Error: {err}")
-        sys.exit(1)
-
-    for threshold, delta, patter_descriptor, frames_bin_path in safe_iterate_patterns(pattern_generator):
+def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
+    for threshold, delta, patter_descriptor, frames_bin_path in safe_iterate_patterns(writing_pattern_generator):
 
         system_clock = SystemClock()
-        failure_logger = create_failure_logger(pattern_generator.current_pattern)
+        failure_logger = create_failure_logger(writing_pattern_generator.current_pattern)
 
         frame_transmitter = FrameTransmitter(system_clock, frames_bin_path)
         writing_pattern_detector = WritingPatternDetector(system_clock, threshold, delta,
@@ -38,9 +26,27 @@ if __name__ == "__main__":
 
         try:
             memory_system.run()
-        except (FileNotFoundError, PermissionError, OSError) as err:
-            logger.critical(f"Error opening/reading frames file: {err}")
+        except (FileNotFoundError, PermissionError, OSError) as e:
+            logger.critical(f"Error opening/reading frames file: {e}")
             sys.exit(1)
 
         # memory reports statistics
         # memory_system.report()
+
+
+if __name__ == "__main__":
+
+    config_file_path = "PatternConfigs/InputConfigs/SystemFailureFlows/failure_pattern_after_successful.yaml"
+    # TODO: make this dynamic
+    frames_folder_path = "PatternConfigs/Frames"  # TODO: make this dynamic
+    failure_log_path = "Logs/log.txt"  # TODO: make separate logs for each system failure
+
+    pattern_generator = PatternGenerator(config_file_path, frames_folder_path)
+
+    try:
+        pattern_generator.init()
+    except BadConfigError as err:
+        logger.critical(f"Configuration Error: {err}")
+        sys.exit(1)
+
+    run_simulation(pattern_generator)
