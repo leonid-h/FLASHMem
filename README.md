@@ -5,3 +5,6 @@ To run FLASHMem Memory System Simulator:
 `python .\FLASHMem.py .\PatternConfigs\InputConfigs\SystemFailureFlows\failure_pattern_after_successful.yaml`
 
 In case of pattern failure check the logs in FLASHMem\Logs
+
+See overview of PatternGenerator, WritingPatternDetector and FrameTransmitter in 
+FLASHMem\Documentation\Task1.pdf and FLASHMem\Documentation\Task2.pdf 
