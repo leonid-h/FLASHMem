@@ -27,9 +27,8 @@ class BadConfigError(Exception):
 
 
 class PatternGenerator(Iterator[tuple[int, int, list, str]]):
-    def __init__(self, config_file_path: str, frames_path: str) -> None:
+    def __init__(self, config_file_path: str) -> None:
         self.__config_file_path = config_file_path
-        self.__frames_path = frames_path + "/" + FRAMES_BIN_FILENAME
         self.__patterns_iter = None
         self.__current_pattern = None
 
@@ -94,20 +93,20 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
         pattern_descriptor = []
 
         try:
-            with open(self.__frames_path, "wb") as f:
+            with open(FRAMES_BIN_FILENAME, "wb") as f:
                 for mw_index, memory_write in enumerate(self.__current_pattern["memory_writes"]):
                     pattern_descriptor.append(0)
                     for frame_index, frame in enumerate(self._get_frames(memory_write)):
                         f.write(frame)
                         pattern_descriptor[mw_index] += 1
         except OSError as err:
-            logging.error(f"Failed to write to {self.__frames_path}: {err}")
+            logging.error(f"Failed to write to {FRAMES_BIN_FILENAME}: {err}")
             raise
         except ValueError as err:
             logging.error(f"Invalid frame header field value: {err}")
             raise
 
-        logger.info(f"Successfully generated a writing pattern, bin file: {self.__frames_path}")
+        logger.info(f"Successfully generated a writing pattern, bin file: {FRAMES_BIN_FILENAME}")
 
         return (self.__current_pattern["threshold"], self.__current_pattern["delta"],
-                pattern_descriptor, self.__frames_path)
+                pattern_descriptor, FRAMES_BIN_FILENAME)

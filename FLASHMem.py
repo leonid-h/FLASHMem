@@ -4,6 +4,7 @@ import logging
 from Utils import loggers
 from datetime import datetime
 
+from Utils.constants import FAILURE_LOGS_FOLDER
 from Utils.PatternGenerator import safe_iterate_patterns, BadConfigError, PatternGenerator
 from MemorySystem.SystemClock import SystemClock
 from MemorySystem.MemorySystem import MemorySystem
@@ -19,12 +20,12 @@ def remove_failure_log_file_if_empty(file_path: str) -> None:
         os.remove(file_path)
 
 
-def run_simulation(writing_pattern_generator: PatternGenerator, failure_log_folder: str) -> None:
+def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
     for threshold, delta, patter_descriptor, frames_bin_path in safe_iterate_patterns(writing_pattern_generator):
         current_pattern = writing_pattern_generator.current_pattern
         now = datetime.now()
         execution_time = now.strftime("__%d_%m_%Y__%H_%M_%S.txt")
-        failure_log_path = failure_log_folder + "/" + current_pattern["name"] + execution_time
+        failure_log_path = FAILURE_LOGS_FOLDER + "/" + current_pattern["name"] + execution_time
 
         system_clock = SystemClock()
         failure_logger = create_failure_logger(current_pattern)
@@ -61,10 +62,8 @@ if __name__ == "__main__":
 
     config_file_path = "PatternConfigs/InputConfigs/SystemFailureFlows/failure_pattern_after_successful.yaml"
     # TODO: make this dynamic
-    frames_folder_path = "PatternConfigs/Frames"  # TODO: make this dynamic
-    failure_log_folder_path = "Logs"
 
-    pattern_generator = PatternGenerator(config_file_path, frames_folder_path)
+    pattern_generator = PatternGenerator(config_file_path)
 
     try:
         pattern_generator.init()
@@ -73,7 +72,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     try:
-        run_simulation(pattern_generator, failure_log_folder_path)
+        run_simulation(pattern_generator)
     except (FileNotFoundError, PermissionError, OSError) as e:
         logger.critical(f"FS error occurred: {e}")
         sys.exit(1)

@@ -1,7 +1,11 @@
 from typing import Final
 
+# memory system params
 FRAME_HEADER_SIZE: Final = 8
 FRAME_PAYLOAD_SIZE: Final = 4096
 FRAME_TOTAL_SIZE: Final = FRAME_HEADER_SIZE + FRAME_PAYLOAD_SIZE
 DATA_PATTERN: Final = b'\xDE\xAD\xBE\xEF'
-FRAMES_BIN_FILENAME: Final = "FRAMES.bin"
+
+# infrastructure constants
+FRAMES_BIN_FILENAME: Final = "PatternConfigs/Frames/FRAMES.bin"
+FAILURE_LOGS_FOLDER: Final = "Logs"
