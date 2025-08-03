@@ -8,11 +8,37 @@ logger = logging.getLogger("infra_logger." + __name__)
 
 
 class FrameTransmitter:
+    """
+    Reads and transmits frames from a binary file according to simulated time.
+
+    Responsible for reading frames from disk, timing frame transmission
+    with the simulation clock, and yielding serialized frame data for processing.
+    """
     def __init__(self, system_clock, frames_path: str) -> None:
+        """
+        Initializes the FrameTransmitter.
+
+        Args:
+            system_clock: The simulation clock object used to coordinate timing.
+            frames_path (str): Path to the binary file containing the frames.
+        """
         self.__frames_path = frames_path
         self.__system_clock = system_clock
 
     def start_frame_transmission(self) -> Generator[bytes, None, None]:
+        """
+        Reads and transmits frames from the binary file, yielding one frame at a time.
+
+        Each frame consists of a header (contains address) and a payload.
+        The function synchronizes with the simulation clock before yielding each frame.
+
+        Yields:
+            bytes: Serialized frame data (header + payload).
+
+        Logs:
+            - When all frames are transmitted or if an incomplete frame is encountered.
+            - If a frame header cannot be unpacked due to file corruption or truncation.
+        """
         with open(self.__frames_path, "rb") as f:
             while True:
                 header_bytes = f.read(FRAME_HEADER_SIZE)
