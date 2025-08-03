@@ -100,10 +100,10 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
                         f.write(frame)
                         pattern_descriptor[mw_index] += 1
         except OSError as err:
-            logging.error(f"Failed to write to {FRAMES_BIN_FILENAME}: {err}")
+            logger.error(f"Failed to write to {FRAMES_BIN_FILENAME}: {err}")
             raise
         except ValueError as err:
-            logging.error(f"Invalid frame header field value: {err}")
+            logger.error(f"Invalid frame header field value: {err}")
             raise
 
         logger.info(f"Successfully generated a writing pattern, bin file: {FRAMES_BIN_FILENAME}")
