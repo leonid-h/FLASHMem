@@ -11,10 +11,24 @@ detector_logger = logging.getLogger("detector_logger")
 
 
 class FailureDetectedError(Exception):
+    """
+    Custom exception raised when a writing pattern failure is detected.
+    """
     pass
 
 
 def generate_failure_header(threshold: int, delta: int, start_addr: int) -> str:
+    """
+    Generates a header for the system failure report.
+
+    Args:
+        threshold (int): The max allowed number of writes in the pattern (THRESHOLD).
+        delta (int): The allowed time window (DELTA) in seconds.
+        start_addr (int): The start address of the failed writing pattern.
+
+    Returns:
+        str: The formatted report header as a string.
+    """
     return (
         f"report type: system failure\n"
         f"user: {getpass.getuser()}\n"
@@ -27,6 +41,15 @@ def generate_failure_header(threshold: int, delta: int, start_addr: int) -> str:
 
 
 def generate_failure_body(memory_writes: list) -> str:
+    """
+    Generates the body of the system failure report, listing all the memory writes of the failed pattern.
+
+    Args:
+        memory_writes (list): List of dictionaries describing each memory write.
+
+    Returns:
+        str: The formatted report body as a string.
+    """
     failure_body = []
 
     for i, mw in enumerate(memory_writes):
@@ -41,6 +64,16 @@ def generate_failure_body(memory_writes: list) -> str:
 
 
 def create_failure_logger(pattern_info) -> Callable[[], None]:
+    """
+    Creates a closure that logs a failure report using the detector logger.
+
+    Args:
+        pattern_info (dict): Dictionary that contains the pattern configuration
+                             (threshold, delta, memory_writes).
+
+    Returns:
+        Callable[[], None]: A function that, when called, logs the pattern failure.
+    """
     def log_failure():
         log_header = generate_failure_header(pattern_info["threshold"], pattern_info["delta"],
                                              pattern_info["memory_writes"][0]["Start_address"])
@@ -52,8 +85,24 @@ def create_failure_logger(pattern_info) -> Callable[[], None]:
 
 
 class WritingPatternDetector:
+    """
+    Detects and logs failures in writing patterns.
+
+    Monitors the sequence of transmitted frames one by one and checks if the configured
+    failure condition is met. If so, logs the failure and raises an error.
+    """
     def __init__(self, system_clock, threshold: int, delta: int,
                  error_log_callback: Callable[[], None], log_path: str) -> None:
+        """
+        Initialize the WritingPatternDetector.
+
+        Args:
+            system_clock: The simulation clock object to track simulated time.
+            threshold (int): The max allowed number of writes in the pattern.
+            delta (int): The allowed time window for failure (in seconds).
+            error_log_callback (Callable[[], None]): Callback to log a pattern failure.
+            log_path (str): Path to the file where a pattern failure is logged.
+        """
         self.__threshold = threshold
         self.__delta = delta
         self.__current_memory_write = 0
@@ -62,21 +111,44 @@ class WritingPatternDetector:
         self.__log_path = log_path
 
     def init_failure_logger(self) -> None:
+        """
+        Initializes the detector logger to log failures to the log file.
+        """
         loggers.setup_detector_logger(self.__log_path)
 
     @staticmethod
     def close_failure_logger() -> None:
+        """
+        Closes all file handlers of the detector logger and clears the handlers.
+        """
         for handler in detector_logger.handlers:
             handler.close()
         detector_logger.handlers.clear()
 
     def process_incoming_frame(self, frame: bytes) -> None:  # TODO: what to do with frame?
+        """
+        Processes an incoming frame and checks if the failure condition is met.
+
+        Args:
+            frame (bytes): The frame data.
+
+        Raises:
+            FailureDetectedError: If the failure condition is detected.
+        """
         if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")
 
     def notify_mw_tx_end(self) -> None:
+        """
+        Notifies the detector of the memory write transmission end.
+
+        Increments the internal memory write counter.
+        """
         self.__current_memory_write += 1
 
     def __report(self) -> None:
+        """
+        Logs the failure using the error log callback.
+        """
         self.__error_log_callback()
