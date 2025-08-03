@@ -6,7 +6,7 @@ logger = logging.getLogger("infra_logger." + __name__)
 
 class MemorySystem:
 
-    def __init__(self, transmitter, detector, pattern_descriptor):
+    def __init__(self, transmitter, detector, pattern_descriptor) -> None:
         self.__transmitter = transmitter
         self.__detector = detector
         self.__pattern_descriptor = pattern_descriptor

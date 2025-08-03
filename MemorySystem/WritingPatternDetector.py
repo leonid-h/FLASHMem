@@ -53,7 +53,8 @@ def create_failure_logger(pattern_info) -> Callable[[], None]:
 
 
 class WritingPatternDetector:
-    def __init__(self, system_clock, threshold: int, delta: int, error_log_callback: Callable[[], None], log_path: str) -> None:
+    def __init__(self, system_clock, threshold: int, delta: int,
+                 error_log_callback: Callable[[], None], log_path: str) -> None:
         self.__threshold = threshold
         self.__delta = delta
         self.__current_memory_write = 0
@@ -61,12 +62,12 @@ class WritingPatternDetector:
         self.__system_clock = system_clock
         loggers.setup_detector_logger(log_path)
 
-    def process_incoming_frame(self, frame) -> None: #TODO: what to do with frame?
+    def process_incoming_frame(self, frame) -> None:  # TODO: what to do with frame?
         if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")
 
-    def notify_mw_tx_end(self):
+    def notify_mw_tx_end(self) -> None:
         self.__current_memory_write += 1
 
     def __report(self) -> None:

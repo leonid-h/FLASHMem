@@ -1,6 +1,3 @@
-# Private function 1: Parses a YAML file in InputConfigs into a collection of frames
-# Private function 2: Writes to a FRAMES.bin file (overwrites if exists) in Frames
-# generate_frames() - public API that calls the private functions
 import math
 import yaml
 import logging

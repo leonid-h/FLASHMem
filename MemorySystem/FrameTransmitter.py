@@ -1,6 +1,6 @@
 import logging
 import struct
-from typing import Generator, Tuple
+from typing import Generator
 
 from Utils.constants import FRAME_HEADER_SIZE, FRAME_PAYLOAD_SIZE
 

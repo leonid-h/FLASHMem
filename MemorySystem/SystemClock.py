@@ -9,6 +9,8 @@ class SystemClock:
         return self.__time
 
     def wait_until(self, target_time) -> None:
-        assert target_time >= self.__time
+
+        if __debug__:
+            assert target_time >= self.__time
 
         self.__time = target_time
