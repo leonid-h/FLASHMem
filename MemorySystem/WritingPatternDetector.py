@@ -60,7 +60,16 @@ class WritingPatternDetector:
         self.__current_memory_write = 0
         self.__error_log_callback = error_log_callback
         self.__system_clock = system_clock
-        loggers.setup_detector_logger(log_path)
+        self.__log_path = log_path
+
+    def init_failure_logger(self) -> None:
+        loggers.setup_detector_logger(self.__log_path)
+
+    @staticmethod
+    def close_failure_logger() -> None:
+        for handler in detector_logger.handlers:
+            handler.close()
+        detector_logger.handlers.clear()
 
     def process_incoming_frame(self, frame) -> None:  # TODO: what to do with frame?
         if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
