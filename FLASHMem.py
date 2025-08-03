@@ -22,11 +22,11 @@ def remove_failure_log_file_if_empty(file_path: str) -> None:
 
 
 def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
-    for threshold, delta, patter_descriptor, frames_bin_path in safe_iterate_patterns(writing_pattern_generator):
+    for threshold, delta, pattern_descriptor, frames_bin_path in safe_iterate_patterns(writing_pattern_generator):
         current_pattern = writing_pattern_generator.current_pattern
         now = datetime.now()
         execution_time = now.strftime("__%d_%m_%Y__%H_%M_%S.txt")
-        failure_log_path = FAILURE_LOGS_FOLDER + "/" + current_pattern["name"] + execution_time
+        failure_log_path = str(os.path.join(FAILURE_LOGS_FOLDER, current_pattern["name"] + execution_time))
 
         system_clock = SystemClock()
         failure_logger = create_failure_logger(current_pattern)
@@ -40,7 +40,7 @@ def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
             logger.critical(f"Initializing failure logger: {er}")
             raise
 
-        memory_system = MemorySystem(frame_transmitter, writing_pattern_detector, patter_descriptor)
+        memory_system = MemorySystem(frame_transmitter, writing_pattern_detector, pattern_descriptor)
 
         try:
             memory_system.run()
