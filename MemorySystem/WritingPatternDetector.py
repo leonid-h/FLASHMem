@@ -27,18 +27,17 @@ def generate_failure_header(threshold: int, delta: int, start_addr: int) -> str:
 
 
 def generate_failure_body(memory_writes: list) -> str:
-    failure_body = ""
+    failure_body = []
 
     for i, mw in enumerate(memory_writes):
-        failure_body = (failure_body +
-                        f"    # memory write {i + 1}\n"
-                        f"    memory_write:\n"
-                        f"      Start_time: {mw['Start_time']} # start time sec\n"
-                        f"      Duration: {mw['Duration']} # duration sec\n"
-                        f"      Start_address: 0x{mw['Start_address']:08X} # start_address\n"
-                        f"      N: {mw['N']} # contiguous frames\n\n")
+        failure_body.append(f"    # memory write {i + 1}\n"
+                            f"    memory_write:\n"
+                            f"      Start_time: {mw['Start_time']} # start time sec\n"
+                            f"      Duration: {mw['Duration']} # duration sec\n"
+                            f"      Start_address: 0x{mw['Start_address']:08X} # start_address\n"
+                            f"      N: {mw['N']} # contiguous frames\n\n")
 
-    return failure_body
+    return ''.join(failure_body)
 
 
 def create_failure_logger(pattern_info) -> Callable[[], None]:
@@ -71,7 +70,7 @@ class WritingPatternDetector:
             handler.close()
         detector_logger.handlers.clear()
 
-    def process_incoming_frame(self, frame) -> None:  # TODO: what to do with frame?
+    def process_incoming_frame(self, frame: bytes) -> None:  # TODO: what to do with frame?
         if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")
