@@ -1,3 +1,4 @@
+import os
 from typing import Final
 
 # memory system params
@@ -7,5 +8,5 @@ FRAME_TOTAL_SIZE: Final = FRAME_HEADER_SIZE + FRAME_PAYLOAD_SIZE
 DATA_PATTERN: Final = b'\xDE\xAD\xBE\xEF'
 
 # infrastructure constants
-FRAMES_BIN_FILENAME: Final = "PatternConfigs/Frames/FRAMES.bin"
+FRAMES_BIN_FILENAME: Final = os.path.join("PatternConfigs", "Frames", "FRAMES.bin")
 FAILURE_LOGS_FOLDER: Final = "Logs"
