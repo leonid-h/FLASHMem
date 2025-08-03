@@ -17,11 +17,32 @@ logger = logging.getLogger("infra_logger." + __name__)
 
 
 def remove_failure_log_file_if_empty(file_path: str) -> None:
+    """
+    The failure log file is created in advance before each pattern run.
+    This function removes such a file if no failure occurred so the log is empty.
+
+    Args:
+        file_path (str): The path to the file to check and remove.
+    """
     if os.path.exists(file_path) and os.path.getsize(file_path) == 0:
         os.remove(file_path)
 
 
 def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
+    """
+    Runs the simulation loop for all writing patterns yielded by the PatternGenerator one by one.
+
+    For each pattern, sets up the SystemClock, FrameTransmitter, and WritingPatternDetector;
+    initializes the detector_logger, runs the memory system, and calls remove_failure_log_file_if_empty.
+
+    Args:
+        writing_pattern_generator (PatternGenerator): An iterator yielding
+            writing patterns to simulate.
+    Raises:
+        FileNotFoundError: If required files are missing.
+        PermissionError: If there are file permission errors.
+        OSError: If there are general OS errors with files.
+    """
     for threshold, delta, pattern_descriptor, frames_bin_path in safe_iterate_patterns(writing_pattern_generator):
         current_pattern = writing_pattern_generator.current_pattern
         now = datetime.now()
@@ -60,6 +81,12 @@ def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
 
 
 if __name__ == "__main__":
+    """
+    Entry point for the FLASHMem Memory System Simulator.
+
+    Parses command line arguments, initializes the PatternGenerator,
+    calls run_simulation and handles configuration and file system errors.
+    """
     parser = ArgParser(description="FLASHMem Memory System Simulator")
     parser.add_argument('config_file_path', help='Path to the yaml configuration file')
     args = parser.parse_args()
