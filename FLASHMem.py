@@ -1,9 +1,10 @@
 import os
 import sys
 import logging
-from Utils import loggers
 from datetime import datetime
 
+from Utils import loggers
+from Utils.ArgParser import ArgParser
 from Utils.constants import FAILURE_LOGS_FOLDER
 from Utils.PatternGenerator import safe_iterate_patterns, BadConfigError, PatternGenerator
 from MemorySystem.SystemClock import SystemClock
@@ -59,11 +60,11 @@ def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
 
 
 if __name__ == "__main__":
+    parser = ArgParser(description="FLASHMem Memory System Simulator")
+    parser.add_argument('config_file_path', help='Path to the yaml configuration file')
+    args = parser.parse_args()
 
-    config_file_path = "PatternConfigs/InputConfigs/SystemFailureFlows/failure_pattern_after_successful.yaml"
-    # TODO: make this dynamic
-
-    pattern_generator = PatternGenerator(config_file_path)
+    pattern_generator = PatternGenerator(args.config_file_path)
 
     try:
         pattern_generator.init()
