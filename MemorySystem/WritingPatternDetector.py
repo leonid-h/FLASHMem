@@ -1,13 +1,23 @@
 import logging
 import getpass
+import math
 from datetime import date
 from typing import Callable
+from enum import Enum
 
 from Utils import loggers
 
 
-logger = logging.getLogger("infra_logger." + __name__)
+infra_logger = logging.getLogger("infra_logger." + __name__)
 detector_logger = logging.getLogger("detector_logger")
+
+
+class Status(Enum):
+    """
+    An enum class used to indicate memory system run completion status
+    """
+    SUCCESS = 0
+    FAILURE = 1
 
 
 class FailureDetectedError(Exception):
@@ -109,6 +119,8 @@ class WritingPatternDetector:
         self.__error_log_callback = error_log_callback
         self.__system_clock = system_clock
         self.__log_path = log_path
+        self.__status = Status.SUCCESS
+        self.__frames_written = 0
 
     def init_failure_logger(self) -> None:
         """
@@ -136,8 +148,11 @@ class WritingPatternDetector:
             FailureDetectedError: If the failure condition is detected.
         """
         if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
+            self.__status = Status.FAILURE
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")
+
+        self.__frames_written += 1
 
     def notify_mw_tx_end(self) -> None:
         """
@@ -146,6 +161,18 @@ class WritingPatternDetector:
         Increments the internal memory write counter.
         """
         self.__current_memory_write += 1
+
+    def print_statistics(self) -> None:
+        """
+        Logs memory system run statistics using the infra logger.
+        """
+        infra_logger.info(f"LAST TRANSMISSION TIME: {self.__system_clock.now}")
+        infra_logger.info(f"TOTAL FRAME COUNT IN FLASH: {self.__frames_written}")
+        infra_logger.info(f"AVERAGE SPEED WITH HTATs: %.2f", self.__frames_written/self.__system_clock.now)
+        if self.__status == Status.FAILURE:
+            infra_logger.error(f"STATUS: {self.__status.name}")
+        else:
+            infra_logger.info(f"STATUS: {self.__status.name}")
 
     def __report(self) -> None:
         """

@@ -1,10 +1,10 @@
-import math
 import yaml
 import logging
 import struct
 from typing import TypeVar, Generator, Iterable, Iterator
 
-from Utils.constants import FRAME_PAYLOAD_SIZE, FRAME_TOTAL_SIZE, DATA_PATTERN, FRAMES_BIN_FILENAME
+from Utils.constants import (FRAME_PAYLOAD_SIZE, FRAME_TOTAL_SIZE,
+                             DATA_PATTERN, FRAMES_BIN_FILENAME, UINT32_MAX, FLOAT32_MAX)
 
 logger = logging.getLogger("infra_logger." + __name__)
 T = TypeVar('T')
@@ -130,28 +130,23 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
         Raises:
             ValueError: If frame header fields are out of range (4 byte unsigned integer).
         """
-        tx_times = set()
+        def check_addr_overflow(value: int) -> None:
+            if not (0 <= value <= UINT32_MAX):
+                raise ValueError("Address out of range")
 
-        def ensure_unique_tx_time(tx_time: int) -> int:
-            while tx_time in tx_times:
-                tx_time += 1
-            tx_times.add(tx_time)
-            return tx_time
-
-        def check_overflow(value) -> None:
-            if not (0 <= value <= 0xFFFFFFFF):
-                raise ValueError("Value out of range")
+        def check_time_overflow(value: float) -> None:
+            if not (0 <= value <= FLOAT32_MAX):
+                raise ValueError("Transmission time out of range")
 
         write_latency = memory_write["Duration"] / memory_write["N"]
         for frame_number in range(memory_write["N"]):
             address = memory_write["Start_address"] + frame_number * FRAME_TOTAL_SIZE
-            transmission_time = math.floor(memory_write["Start_time"] + frame_number * write_latency)
-            transmission_time = ensure_unique_tx_time(transmission_time)
+            transmission_time = memory_write["Start_time"] + frame_number * write_latency
 
-            check_overflow(address)
-            check_overflow(transmission_time)
+            check_addr_overflow(address)
+            check_time_overflow(transmission_time)
 
-            frame_header = struct.pack('<II', address, transmission_time)
+            frame_header = struct.pack('<If', address, transmission_time)
             frame_data = DATA_PATTERN * (FRAME_PAYLOAD_SIZE // len(DATA_PATTERN))
             frame = frame_header + frame_data
 

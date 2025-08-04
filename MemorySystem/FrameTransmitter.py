@@ -48,7 +48,7 @@ class FrameTransmitter:
                     break
 
                 try:
-                    address, transmission_time = struct.unpack('<II', header_bytes)
+                    address, transmission_time = struct.unpack('<If', header_bytes)
                 except struct.error as e:
                     logger.error(f"Failed to unpack header at position {f.tell() - FRAME_HEADER_SIZE}: {e}")
                     break

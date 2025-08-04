@@ -60,5 +60,7 @@ class MemorySystem:
                 break
 
             logger.info(f'finished transferring: {memory_write_len} frames')
+
+        self.__detector.print_statistics()
         logger.info(f"Writing pattern processing complete, in case of failure, check log")
         

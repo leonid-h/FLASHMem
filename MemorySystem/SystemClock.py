@@ -13,7 +13,7 @@ class SystemClock:
         self.__time = 0
 
     @property
-    def now(self) -> int:
+    def now(self) -> float:
         """
         Get the current simulation time.
 
@@ -22,7 +22,7 @@ class SystemClock:
         """
         return self.__time
 
-    def wait_until(self, target_time: int) -> None:
+    def wait_until(self, target_time: float) -> None:
         """
         Advances the simulation clock to the specified time.
 
