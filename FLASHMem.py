@@ -52,7 +52,9 @@ def run_simulation(writing_pattern_generator: PatternGenerator) -> None:
         failure_logger = create_failure_logger(current_pattern)
 
         frame_transmitter = FrameTransmitter(system_clock, frames_bin_path)
-        writing_pattern_detector = WritingPatternDetector(system_clock, threshold, delta,
+        base_logical_address = current_pattern["memory_writes"][0]["Start_address"]
+
+        writing_pattern_detector = WritingPatternDetector(system_clock, base_logical_address, threshold, delta,
                                                           failure_logger, failure_log_path)
         try:
             writing_pattern_detector.init_failure_logger()

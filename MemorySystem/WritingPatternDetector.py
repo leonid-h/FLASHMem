@@ -1,11 +1,12 @@
+import struct
 import logging
 import getpass
-import math
 from datetime import date
 from typing import Callable
 from enum import Enum
 
 from Utils import loggers
+from Utils.constants import FLASH_FRAME_TOTAL_SIZE
 
 
 infra_logger = logging.getLogger("infra_logger." + __name__)
@@ -101,7 +102,7 @@ class WritingPatternDetector:
     Monitors the sequence of transmitted frames one by one and checks if the configured
     failure condition is met. If so, logs the failure and raises an error.
     """
-    def __init__(self, system_clock, threshold: int, delta: int,
+    def __init__(self, system_clock, base_address: int, threshold: int, delta: int,
                  error_log_callback: Callable[[], None], log_path: str) -> None:
         """
         Initialize the WritingPatternDetector.
@@ -113,13 +114,14 @@ class WritingPatternDetector:
             error_log_callback (Callable[[], None]): Callback to log a pattern failure.
             log_path (str): Path to the file where a pattern failure is logged.
         """
-        self.__threshold = threshold
+        self.__threshold_addr = (base_address + threshold - 1) * FLASH_FRAME_TOTAL_SIZE
         self.__delta = delta
-        self.__current_memory_write = 0
+        self.__previous_memory_write_end = False
         self.__error_log_callback = error_log_callback
         self.__system_clock = system_clock
         self.__log_path = log_path
         self.__status = Status.SUCCESS
+        self.__frames_to_be_written = []
         self.__frames_written = 0
 
     def init_failure_logger(self) -> None:
@@ -147,12 +149,18 @@ class WritingPatternDetector:
         Raises:
             FailureDetectedError: If the failure condition is detected.
         """
-        if self.__system_clock.now <= self.__delta and self.__current_memory_write + 1 >= self.__threshold:
+        if self.__previous_memory_write_end:
+            self.__write_frames_to_flash()
+            self.__previous_memory_write_end = False
+
+        frame_address = struct.unpack('<I', frame[:4])[0]
+
+        if self.__system_clock.now <= self.__delta and frame_address >= self.__threshold_addr:
             self.__status = Status.FAILURE
             self.__report()
             raise FailureDetectedError("Writing pattern failure detected.")
 
-        self.__frames_written += 1
+        self.__frames_to_be_written.append(frame)
 
     def notify_mw_tx_end(self) -> None:
         """
@@ -160,7 +168,11 @@ class WritingPatternDetector:
 
         Increments the internal memory write counter.
         """
-        self.__current_memory_write += 1
+        self.__previous_memory_write_end = True
+
+    def notify_pattern_tx_end(self) -> None:
+        if self.__status != Status.FAILURE:
+            self.__write_frames_to_flash()
 
     def print_statistics(self) -> None:
         """
@@ -179,3 +191,7 @@ class WritingPatternDetector:
         Logs the failure using the error log callback.
         """
         self.__error_log_callback()
+
+    def __write_frames_to_flash(self):
+        self.__frames_written += len(self.__frames_to_be_written)
+        self.__frames_to_be_written.clear()

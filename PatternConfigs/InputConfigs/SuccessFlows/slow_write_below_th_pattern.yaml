@@ -1,16 +1,16 @@
 # SLOW SEQUENTIAL WRITE BELOW THRESHOLD
-# MEMORY WRITES: 4 (<THRESHOLD)
-# TOTAL DURATION: 75 SECONDS (>DELTA)
+# THRESHOLD: 26
+# DELTA: 50
 
 #EXPECTED STATISTICS:
 # TOTAL FRAME COUNT IN FLASH: 25
-# LAST TRANSMISSION TIME: 73
+# LAST TRANSMISSION ATTEMPT TIME: 73 (attempting to transfer frame number 25)
 # AVERAGE SPEED WITH HTATs: 0.34 FPS
 # STATUS: SUCCESS
 
 writing_patterns:
   - name: SLOW_WRITE_BELOW_TH
-    threshold: 10     # number of writes
+    threshold: 26     # number of writes
     delta: 50         # seconds
     memory_writes:
       #memory write 1

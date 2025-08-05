@@ -50,6 +50,7 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
         __patterns_iter (Iterator): Internal iterator that iterates patterns.
         __current_pattern (dict): The current pattern being processed.
     """
+
     def __init__(self, config_file_path: str) -> None:
         """
         Initializes the PatternGenerator with the specified config file.
@@ -116,7 +117,7 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
             raise BadConfigError(f"Error parsing YAML: {err}")
 
     @staticmethod
-    def _get_frames(memory_write: dict) -> Generator[bytes, None, None]:
+    def __get_frames(memory_write: dict) -> Generator[bytes, None, None]:
         """
         Generates all frames for a single memory write.
 
@@ -130,6 +131,7 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
         Raises:
             ValueError: If frame header fields are out of range (4 byte unsigned integer).
         """
+
         def check_addr_overflow(value: int) -> None:
             if not (0 <= value <= UINT32_MAX):
                 raise ValueError("Address out of range")
@@ -139,9 +141,10 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
                 raise ValueError("Transmission time out of range")
 
         write_latency = memory_write["Duration"] / memory_write["N"]
-        for frame_number in range(memory_write["N"]):
-            address = memory_write["Start_address"] + frame_number * FRAME_TOTAL_SIZE
-            transmission_time = memory_write["Start_time"] + frame_number * write_latency
+        for frame_index in range(memory_write["N"]):
+            address = (memory_write["Start_address"] + frame_index) * FRAME_TOTAL_SIZE
+
+            transmission_time = memory_write["Start_time"] + frame_index * write_latency
 
             check_addr_overflow(address)
             check_time_overflow(transmission_time)
@@ -177,7 +180,7 @@ class PatternGenerator(Iterator[tuple[int, int, list, str]]):
             with open(FRAMES_BIN_FILENAME, "wb") as f:
                 for mw_index, memory_write in enumerate(self.__current_pattern["memory_writes"]):
                     pattern_descriptor.append(0)
-                    for frame_index, frame in enumerate(self._get_frames(memory_write)):
+                    for frame_index, frame in enumerate(self.__get_frames(memory_write)):
                         f.write(frame)
                         pattern_descriptor[mw_index] += 1
         except OSError as err:

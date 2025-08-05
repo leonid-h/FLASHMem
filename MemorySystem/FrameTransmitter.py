@@ -2,7 +2,7 @@ import logging
 import struct
 from typing import Generator
 
-from Utils.constants import FRAME_HEADER_SIZE, FRAME_PAYLOAD_SIZE
+from Utils.constants import FRAME_HEADER_SIZE, FRAME_PAYLOAD_SIZE, FRAME_TOTAL_SIZE, FRAME_TX_TIME_SIZE
 
 logger = logging.getLogger("infra_logger." + __name__)
 
@@ -53,8 +53,19 @@ class FrameTransmitter:
                     logger.error(f"Failed to unpack header at position {f.tell() - FRAME_HEADER_SIZE}: {e}")
                     break
 
-                header_bytes = struct.pack('<I', address)
+                flash_frame_address = self.__frame_to_flash_frame_translate(address)
+                header_bytes = struct.pack('<I', flash_frame_address)
 
                 self.__system_clock.wait_until(transmission_time)
 
                 yield header_bytes + payload_bytes
+
+    @staticmethod
+    def __frame_to_flash_frame_translate(address: int) -> int:
+        """
+        Translates a frame address to a flash frame address
+        """
+        frame_index = address // FRAME_TOTAL_SIZE
+        new_address = address - frame_index * FRAME_TX_TIME_SIZE
+
+        return new_address
