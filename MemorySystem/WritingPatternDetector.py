@@ -171,6 +171,11 @@ class WritingPatternDetector:
         self.__previous_memory_write_end = True
 
     def notify_pattern_tx_end(self) -> None:
+        """
+        Notifies the detector of the pattern transmission end.
+
+        If no failure detected flushes the last memory write to the FLASH
+        """
         if self.__status != Status.FAILURE:
             self.__write_frames_to_flash()
 
